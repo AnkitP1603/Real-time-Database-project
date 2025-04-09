@@ -1,9 +1,11 @@
-import Header from "./components/Header";
-
+import Header from "./Components/Header";
+// import LoginPage from Login
+import LoginPage from "./pages/LoginPage";
 function App() {
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white">
+    <div className="h-screen text-white">
       <Header />
+      <LoginPage />
     </div>
   );
 }
