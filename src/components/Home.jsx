@@ -131,7 +131,8 @@ const Home = () => {
       ) : (
         <>
           {/* Table */}
-          <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+          {/* Desktop + iPad Table View */}
+          <div className="hidden md:block overflow-x-auto bg-white shadow-lg rounded-lg">
             <table className="min-w-full table-auto text-sm text-left text-gray-700">
               <thead className="bg-gray-100 border-b">
                 <tr>
@@ -177,6 +178,36 @@ const Home = () => {
               </tbody>
             </table>
           </div>
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-4">
+            {paginatedData.map((element, index) => (
+              <div key={element._id} className="bg-white rounded-lg shadow-md p-4">
+                <h2 className="text-lg font-semibold mb-1">{element.title}</h2>
+                <p className="text-sm text-gray-600 mb-2">{element.description}</p>
+                <div className="text-sm text-gray-700 space-y-1 mb-2">
+                  <p><strong>Date:</strong> {new Date(element.date).toLocaleDateString()}</p>
+                  <p><strong>Time:</strong> {element.time}</p>
+                  <p><strong>Location:</strong> {element.location}</p>
+                  <p><strong>Category:</strong> {element.category}</p>
+                  <p><strong>Organized By:</strong> {element.organiserName}</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <NavLink to={`/edit/${element._id}`}>
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow-sm text-sm">
+                      Edit
+                    </button>
+                  </NavLink>
+                  <button
+                    onClick={() => deleteuser(element._id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
 
           {/* Pagination Controls */}
           <div className="mt-6 flex justify-center space-x-2">
@@ -184,11 +215,10 @@ const Home = () => {
               <button
                 key={idx}
                 onClick={() => handlePageChange(idx + 1)}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  currentPage === idx + 1
+                className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === idx + 1
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
+                  }`}
               >
                 {idx + 1}
               </button>
