@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import io from 'socket.io-client';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { NavLink } from 'react-router-dom';
+import { Navigate, NavLink, useNavigate } from 'react-router-dom';
 import { adddata, deldata, updatedata } from './context/ContextProvider';
 
-const socket = io("https://mib-backend-uuga.onrender.com");
+
 
 const Home = () => {
   const [getuserdata, setUserdata] = useState([]);
@@ -17,6 +16,7 @@ const Home = () => {
   const { updata, setUPdata } = useContext(updatedata);
   const { dltdata, setDLTdata } = useContext(deldata);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const getdata = async () => {
     try {
@@ -41,25 +41,6 @@ const Home = () => {
 
   useEffect(() => {
     getdata();
-
-    // Listen to real-time events
-    socket.on('eventCreated', () => {
-      getdata();
-    });
-
-    socket.on('eventUpdated', () => {
-      getdata();
-    });
-
-    socket.on('eventDeleted', () => {
-      getdata();
-    });
-
-    return () => {
-      socket.off('eventCreated');
-      socket.off('eventUpdated');
-      socket.off('eventDeleted');
-    };
   }, []);
 
   const deleteuser = async (id) => {
@@ -73,17 +54,58 @@ const Home = () => {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         setDLTdata(data);
-        // getdata() not needed here since socket handles it
+        getdata();
       } else {
-        console.log("Delete failed");
+        console.log("Delete failed:", res.status, data.message || data);
       }
+
     } catch (error) {
       console.log("Delete error:", error);
     }
   };
 
+  const updateData = (data)=>{
+    setUPdata(data);
+    navigate("/update");
+  }
+
+//   const updateData = async (eventData, token, id = null) => {
+//     try {
+//       const method = id ? "PUT" : "POST"; // Use PUT for editing
+//       const url = id
+//         ? `https://mib-backend-uuga.onrender.com/api/v1/events/${id}`
+//         : `https://mib-backend-uuga.onrender.com/api/v1/events`;
+  
+//       const res = await fetch(url, {
+//         method: method,
+//         headers: {
+//           "Content-Type": "application/json",
+//           "Authorization": `Bearer ${token}`
+//         },
+//         body: JSON.stringify({
+//           title: eventData.title,
+//           description: eventData.description,
+//           date: eventData.date,
+//           time: eventData.time,
+//           location: eventData.location,
+//           category: eventData.category
+//         })
+//       });
+  
+//       const data = await res.json();
+//       if (!res.ok) {
+//         throw new Error(data.message || "Error occurred!");
+//       }
+  
+//       return data; // Return the response data if successful
+//     } catch (error) {
+//       console.error(error);
+//       throw new Error(error.message || "Something went wrong.");
+//     }
+//   };
   const totalPages = Math.ceil(getuserdata.length / itemsPerPage);
   const paginatedData = getuserdata.slice(
     (currentPage - 1) * itemsPerPage,
@@ -96,7 +118,6 @@ const Home = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-24">
-      {/* Alerts */}
       {udata && (
         <div className="mb-4 rounded-md bg-green-100 border border-green-400 text-green-800 px-4 py-3">
           <strong className="font-semibold">{udata.title}</strong> added successfully!
@@ -113,7 +134,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Add Button */}
       <div className="flex justify-end mb-6">
         <NavLink to="/create">
           <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow-sm transition-all duration-200">
@@ -122,7 +142,6 @@ const Home = () => {
         </NavLink>
       </div>
 
-      {/* Loader or Table */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-64">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-4"></div>
@@ -130,8 +149,6 @@ const Home = () => {
         </div>
       ) : (
         <>
-          {/* Table */}
-          {/* Desktop + iPad Table View */}
           <div className="hidden md:block overflow-x-auto bg-white shadow-lg rounded-lg">
             <table className="min-w-full table-auto text-sm text-left text-gray-700">
               <thead className="bg-gray-100 border-b">
@@ -160,11 +177,11 @@ const Home = () => {
                     <td className="px-6 py-3">{element.organiserName}</td>
                     <td className="px-6 py-3">
                       <div className="flex gap-2">
-                        <NavLink to={`/edit/${element._id}`}>
-                          <button className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
+                          <button
+                            onClick={() => updateData(element)}
+                           className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
                             <CreateIcon fontSize="small" />
                           </button>
-                        </NavLink>
                         <button
                           onClick={() => deleteuser(element._id)}
                           className="bg-red-500 hover:bg-red-600 text-white p-1 rounded shadow-sm"
@@ -178,9 +195,9 @@ const Home = () => {
               </tbody>
             </table>
           </div>
-          {/* Mobile Card View */}
+
           <div className="block md:hidden space-y-4">
-            {paginatedData.map((element, index) => (
+            {paginatedData.map((element) => (
               <div key={element._id} className="bg-white rounded-lg shadow-md p-4">
                 <h2 className="text-lg font-semibold mb-1">{element.title}</h2>
                 <p className="text-sm text-gray-600 mb-2">{element.description}</p>
@@ -208,17 +225,16 @@ const Home = () => {
             ))}
           </div>
 
-
-          {/* Pagination Controls */}
           <div className="mt-6 flex justify-center space-x-2">
             {Array.from({ length: totalPages }, (_, idx) => (
               <button
                 key={idx}
                 onClick={() => handlePageChange(idx + 1)}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === idx + 1
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  currentPage === idx + 1
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                  }`}
+                }`}
               >
                 {idx + 1}
               </button>
