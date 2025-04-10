@@ -7,6 +7,7 @@ import { adddata, deldata, updatedata } from './context/ContextProvider';
 const Home = () => {
   const [getuserdata, setUserdata] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 5;
 
   const { udata, setUdata } = useContext(adddata);
@@ -30,6 +31,8 @@ const Home = () => {
       }
     } catch (error) {
       console.log("Fetch error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,71 +100,80 @@ const Home = () => {
         </NavLink>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
-        <table className="min-w-full table-auto text-sm text-left text-gray-700">
-          <thead className="bg-gray-100 border-b">
-            <tr>
-              <th className="px-6 py-3 font-medium">#</th>
-              <th className="px-6 py-3 font-medium">Title</th>
-              <th className="px-6 py-3 font-medium">Description</th>
-              <th className="px-6 py-3 font-medium">Date</th>
-              <th className="px-6 py-3 font-medium">Time</th>
-              <th className="px-6 py-3 font-medium">Location</th>
-              <th className="px-6 py-3 font-medium">Category</th>
-              <th className="px-6 py-3 font-medium">Organized By</th>
-              <th className="px-6 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((element, index) => (
-              <tr key={element._id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                <td className="px-6 py-3">{element.title}</td>
-                <td className="px-6 py-3">{element.description}</td>
-                <td className="px-6 py-3">{new Date(element.date).toLocaleDateString()}</td>
-                <td className="px-6 py-3">{element.time}</td>
-                <td className="px-6 py-3">{element.location}</td>
-                <td className="px-6 py-3">{element.category}</td>
-                <td className="px-6 py-3">{element.organiserName}</td>
-                <td className="px-6 py-3">
-                  <div className="flex gap-2">
-                    {/* Removed View button */}
-                    <NavLink to={`/edit/${element._id}`}>
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
-                        <CreateIcon fontSize="small" />
-                      </button>
-                    </NavLink>
-                    <button
-                      onClick={() => deleteuser(element._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-1 rounded shadow-sm"
-                    >
-                      <DeleteOutlineIcon fontSize="small" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Loader or Table */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-4"></div>
+          <p className="text-gray-600 text-lg font-medium">Fetching Events...</p>
+        </div>
+      ) : (
+        <>
+          {/* Table */}
+          <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+            <table className="min-w-full table-auto text-sm text-left text-gray-700">
+              <thead className="bg-gray-100 border-b">
+                <tr>
+                  <th className="px-6 py-3 font-medium">#</th>
+                  <th className="px-6 py-3 font-medium">Title</th>
+                  <th className="px-6 py-3 font-medium">Description</th>
+                  <th className="px-6 py-3 font-medium">Date</th>
+                  <th className="px-6 py-3 font-medium">Time</th>
+                  <th className="px-6 py-3 font-medium">Location</th>
+                  <th className="px-6 py-3 font-medium">Category</th>
+                  <th className="px-6 py-3 font-medium">Organized By</th>
+                  <th className="px-6 py-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData.map((element, index) => (
+                  <tr key={element._id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="px-6 py-3">{element.title}</td>
+                    <td className="px-6 py-3">{element.description}</td>
+                    <td className="px-6 py-3">{new Date(element.date).toLocaleDateString()}</td>
+                    <td className="px-6 py-3">{element.time}</td>
+                    <td className="px-6 py-3">{element.location}</td>
+                    <td className="px-6 py-3">{element.category}</td>
+                    <td className="px-6 py-3">{element.organiserName}</td>
+                    <td className="px-6 py-3">
+                      <div className="flex gap-2">
+                        <NavLink to={`/edit/${element._id}`}>
+                          <button className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
+                            <CreateIcon fontSize="small" />
+                          </button>
+                        </NavLink>
+                        <button
+                          onClick={() => deleteuser(element._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white p-1 rounded shadow-sm"
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Pagination Controls */}
-      <div className="mt-6 flex justify-center space-x-2">
-        {Array.from({ length: totalPages }, (_, idx) => (
-          <button
-            key={idx}
-            onClick={() => handlePageChange(idx + 1)}
-            className={`px-3 py-1 rounded-md text-sm font-medium ${
-              currentPage === idx + 1
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-            }`}
-          >
-            {idx + 1}
-          </button>
-        ))}
-      </div>
+          {/* Pagination Controls */}
+          <div className="mt-6 flex justify-center space-x-2">
+            {Array.from({ length: totalPages }, (_, idx) => (
+              <button
+                key={idx}
+                onClick={() => handlePageChange(idx + 1)}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  currentPage === idx + 1
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
