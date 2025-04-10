@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import io from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:4500");
+const socket = io("https://mib-backend-uuga.onrender.com");
 
 export default function TableLogsPage() {
   const [events, setEvents] = useState([]);
@@ -11,7 +11,7 @@ export default function TableLogsPage() {
 
   const fetchLogs = async () => {
     try {
-      const res = await axios.get("http://localhost:4500/api/v1/logs", {
+      const res = await axios.get("https://mib-backend-uuga.onrender.com/api/v1/logs", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
