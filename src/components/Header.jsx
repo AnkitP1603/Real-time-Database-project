@@ -40,7 +40,7 @@ const Header = () => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/10 dark:bg-black/20 border-b border-white/20 shadow-md">
+      <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-gray-900/60 dark:bg-black/20 border-b border-white/20 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-12">
