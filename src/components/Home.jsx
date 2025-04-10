@@ -21,21 +21,16 @@ const Home = () => {
           "Authorization": `Bearer ${token}`
         }
       });
-  
+
       const data = await res.json();
-  
-  
-      if (res.ok) {
-        // Ensure we're accessing 'events' from the response
-        if (data.events) {
-          setUserdata(data.events); // Set the events array // Debug: Number of events
-        } else {
-        }
-      } else {
+      if (res.ok && data.events) {
+        setUserdata(data.events);
       }
     } catch (error) {
+      console.log("Fetch error:", error);
     }
   };
+
   useEffect(() => {
     getdata();
   }, []);
@@ -62,12 +57,9 @@ const Home = () => {
     }
   };
 
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Alerts */}
-      <br></br>
-      <br></br>
       {udata && (
         <div className="mb-4 rounded-md bg-green-100 border border-green-400 text-green-800 px-4 py-3">
           <strong className="font-semibold">{udata.title}</strong> added successfully!
@@ -105,6 +97,7 @@ const Home = () => {
               <th className="px-6 py-3 font-medium">Time</th>
               <th className="px-6 py-3 font-medium">Location</th>
               <th className="px-6 py-3 font-medium">Category</th>
+              <th className="px-6 py-3 font-medium">Organized By</th> {/* ✅ New column */}
               <th className="px-6 py-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -118,14 +111,15 @@ const Home = () => {
                 <td className="px-6 py-3">{element.time}</td>
                 <td className="px-6 py-3">{element.location}</td>
                 <td className="px-6 py-3">{element.category}</td>
+                <td className="px-6 py-3">{element.organiserName}</td> {/* ✅ New data cell */}
                 <td className="px-6 py-3">
                   <div className="flex gap-2">
-                    <NavLink to={`view/${element._id}`}>
+                    <NavLink to={`/view/${element._id}`}>
                       <button className="bg-green-500 hover:bg-green-600 text-white p-1 rounded shadow-sm">
                         <RemoveRedEyeIcon fontSize="small" />
                       </button>
                     </NavLink>
-                    <NavLink to={`edit/${element._id}`}>
+                    <NavLink to={`/edit/${element._id}`}>
                       <button className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
                         <CreateIcon fontSize="small" />
                       </button>
