@@ -1,126 +1,157 @@
 import { useState, useEffect } from "react";
+import io from "socket.io-client";
+import axios from "axios";
 
-const events = [
-  {
-    title: "Hackathon 2025",
-    description: "A 48-hour hackathon focusing on AI and ML.",
-    date: "2025-05-01",
-    time: "10:00 AM",
-    location: "Auditorium Hall A",
-    category: "Tech",
-    status: "Upcoming",
-    organizedBy: "Coding Club",
-  },
-  {
-    title: "Cultural Fest",
-    description: "Dance, music, drama, and more fun events.",
-    date: "2025-03-10",
-    time: "6:00 PM",
-    location: "Open Air Theater",
-    category: "Cultural",
-    status: "Finished",
-    organizedBy: "Cultural Council",
-  },
-  {
-    title: "Guest Lecture: Future of Quantum Computing",
-    description: "Talk by Dr. Alan Turing Jr.",
-    date: "2025-04-05",
-    time: "3:00 PM",
-    location: "Seminar Room 2",
-    category: "Academic",
-    status: "Deleted",
-    organizedBy: "Science Society",
-  },
-];
-
-const statuses = ["All", "Upcoming", "Deleted", "Finished"];
+const socket = io("http://localhost:4500");
 
 export default function TableLogsPage() {
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [events, setEvents] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const logsPerPage = 8;
 
-  const filteredEvents =
-    selectedStatus === "All"
-      ? events
-      : events.filter((event) => event.status === selectedStatus);
+  const fetchLogs = async () => {
+    try {
+      const res = await axios.get("http://localhost:4500/api/v1/logs", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const filteredLogs = res.data.logs.filter((log) =>
+        ["created", "updated", "deleted"].includes(log.action)
+      );
+
+      const formatted = filteredLogs.map((log) => ({
+        title: log.title || "Deleted Event",
+        description: `${log.action} by ${log.performedBy?.name || "Unknown"}`,
+        date: new Date(log.timestamp).toISOString().split("T")[0],
+        time: new Date(log.timestamp).toLocaleTimeString(),
+        action: log.action,
+      }));
+
+      setEvents(formatted.reverse());
+    } catch (err) {
+      console.error("Error fetching logs:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    socket.on("logUpdated", fetchLogs);
+    return () => socket.off("logUpdated", fetchLogs);
+  }, []);
 
   const formatDate = (dateStr) => {
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}/${year}`;
   };
 
+  const indexOfLastLog = currentPage * logsPerPage;
+  const indexOfFirstLog = indexOfLastLog - logsPerPage;
+  const currentLogs = events.slice(indexOfFirstLog, indexOfLastLog);
+  const totalPages = Math.ceil(events.length / logsPerPage);
+
   return (
     <div className="pt-24 px-4 min-h-screen bg-gray-50 dark:bg-[#111827] text-gray-900 dark:text-white">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6 flex items-center gap-4">
-          <label htmlFor="status" className="text-lg font-semibold">
-            Status:
-          </label>
-          <select
-            id="status"
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-600"
-          >
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="overflow-x-auto bg-white dark:bg-gray-900 shadow-md rounded-lg">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-100 dark:bg-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Title</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Description</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Time</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Organized By</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                {["Title", "Description", "Date", "Time", "Action"].map((head) => (
+                  <th
+                    key={head}
+                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  >
+                    {head}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {filteredEvents.map((event, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3 font-medium whitespace-normal">{event.title}</td>
-                  <td className="px-4 py-3 whitespace-normal">{event.description}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{formatDate(event.date)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{event.time}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{event.location}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{event.category}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{event.organizedBy}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-semibold
-                      ${
-                        event.status === "Upcoming"
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                          : event.status === "Finished"
-                          ? "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100"
-                          : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                      }`}
-                    >
-                      {event.status}
-                    </span>
+              {currentLogs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    No logs found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                currentLogs.map((event, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-4 py-3 font-medium">{event.title}</td>
+                    <td className="px-4 py-3">{event.description}</td>
+                    <td className="px-4 py-3">{formatDate(event.date)}</td>
+                    <td className="px-4 py-3">{event.time}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block px-2 py-1 rounded-full text-xs font-semibold capitalize ${
+                          event.action === "created"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                            : event.action === "updated"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100"
+                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                        }`}
+                      >
+                        {event.action}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-        {/* Pagination (Static for now) */}
-        <div className="mt-4 flex justify-between items-center text-sm">
-          <span>Page 1 of 1</span>
-          <div className="flex gap-1">
-            <button className="px-2 py-1 border rounded disabled:opacity-50 dark:border-gray-600">«</button>
-            <button className="px-2 py-1 border rounded dark:border-gray-600">‹</button>
-            <button className="px-2 py-1 border rounded dark:border-gray-600">›</button>
-            <button className="px-2 py-1 border rounded dark:border-gray-600">»</button>
-          </div>
+
+          {/* Pagination */}
+          {events.length > logsPerPage && (
+            <div className="flex justify-center items-center py-4 space-x-1 text-sm text-white">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+              >
+                «
+              </button>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+              >
+                &lt;
+              </button>
+              {[...Array(totalPages)].map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === idx + 1
+                      ? "bg-blue-700 text-white"
+                      : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+              >
+                &gt;
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+              >
+                »
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
