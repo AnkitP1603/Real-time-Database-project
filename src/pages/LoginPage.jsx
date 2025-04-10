@@ -1,112 +1,100 @@
 import { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa6";
 import { FaLock, FaLockOpen } from "react-icons/fa";
-import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   useEffect(() => {
-    setUsername('');
+    setEmail('');
     setPassword('');
     setShowPassword(false);
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const storedUsername = Cookies.get('username');
-    const storedPassword = Cookies.get('password');
 
-    if (username === storedUsername && password === storedPassword) {
+    try {
+      const res = await fetch('https://mib-backend-uuga.onrender.com/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || 'Login failed');
+
+      alert('Login successful!');
+      localStorage.setItem("token", data.token);
       navigate('/home');
-    } else {
-      alert('Invalid username or password');
+    } catch (err) {
+      alert(err.message || 'Something went wrong. Please try again.');
     }
   };
 
-  const handleSignupClick = (e) => {
-    e.preventDefault();
-    navigate('/signup');
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="flex justify-center items-center py-12 bg-gray-800 min-h-screen">
-      <form
-        onSubmit={handleLogin}
-        className="w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-lg text-white p-8 rounded-xl shadow-lg mx-4"
-      >
-        <h1 className="text-3xl font-bold text-center mb-6">Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700 px-4">
+      <div className="bg-white shadow-xl rounded-xl p-8 max-w-md w-full">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Login</h1>
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email */}
+          <div className="relative">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 pl-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <FaUser className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
+          </div>
 
-        {/* Username */}
-        <div className="relative mb-6">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="w-full h-12 bg-transparent border border-white/20 rounded-full px-5 pr-12 text-white placeholder-white focus:outline-none"
-          />
-          <FaUser className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-lg" />
-        </div>
+          {/* Password */}
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <FaLock className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400"
+            >
+              {showPassword ? <FaLockOpen /> : <FaLock />}
+            </button>
+          </div>
 
-        {/* Password */}
-        <div className="relative mb-4">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full h-12 bg-transparent border border-white/20 rounded-full px-5 pr-12 text-white placeholder-white focus:outline-none"
-          />
+          {/* Submit */}
           <button
-            type="button"
-            onClick={togglePasswordVisibility}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-lg focus:outline-none"
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
           >
-            {showPassword ? <FaLockOpen /> : <FaLock />}
+            Login
           </button>
-        </div>
 
-        {/* Remember and Forgot */}
-        <div className="flex justify-between items-center text-sm mb-6">
-          <label className="flex items-center gap-1">
-            <input type="checkbox" className="accent-white" />
-            Remember me
-          </label>
-          <a href="#" className="hover:underline">Forgot password?</a>
-        </div>
-
-        {/* Login Button */}
-        <button
-          type="submit"
-          className="w-full h-11 bg-white text-gray-800 font-semibold rounded-full shadow hover:bg-gray-100 transition"
-        >
-          Login
-        </button>
-
-        {/* Signup */}
-        <div className="text-sm text-center mt-6">
-          <p>
+          {/* Link to Sign Up */}
+          <div className="text-center text-sm text-gray-600 mt-4">
             Don't have an account?{' '}
             <span
-              className="font-semibold cursor-pointer hover:underline"
-              onClick={handleSignupClick}
+              className="text-blue-600 hover:underline font-medium cursor-pointer"
+              onClick={() => navigate("/signup")}
             >
               Sign Up
             </span>
-          </p>
-        </div>
-      </form>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

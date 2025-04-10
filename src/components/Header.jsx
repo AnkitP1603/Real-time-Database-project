@@ -43,10 +43,11 @@ const Header = () => {
             </a>
 
             <div className="hidden lg:flex gap-8 text-white text-sm">
-              <a href="/" className="hover:text-blue-400">Home</a>
+              <a href="/home" className="hover:text-blue-400">Home</a>
               <a href="/logs" className="hover:text-blue-400">Logs</a>
               <a href="/dashboard" className="hover:text-blue-400">DashBoard</a>
               <a href="/login" className="hover:text-blue-400">Login</a>
+              <a href="/signup" className="hover:text-blue-400">SignUp</a>
             </div>
           </div>
 

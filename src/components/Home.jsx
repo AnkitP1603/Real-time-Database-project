@@ -86,7 +86,7 @@ const Home = () => {
 
       {/* Add Button */}
       <div className="flex justify-end mb-6">
-        <NavLink to="/register">
+        <NavLink to="/create">
           <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow-sm transition-all duration-200">
             + Add Event
           </button>
