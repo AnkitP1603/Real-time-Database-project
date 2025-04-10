@@ -52,9 +52,9 @@ export default function TableLogsPage() {
   const totalPages = Math.ceil(events.length / logsPerPage);
 
   return (
-    <div className="pt-24 px-4 min-h-screen bg-gray-50 dark:bg-[#111827] text-gray-900 dark:text-white">
+    <div className="pt-24 px-4 min-h-screen bg-gray-300 dark:bg-[#111827] text-gray-900 dark:text-white">
       <div className="max-w-7xl mx-auto">
-        <div className="overflow-x-auto bg-white dark:bg-gray-900 shadow-md rounded-lg">
+        <div className="overflow-x-auto bg-white dark:bg-gray-700 shadow-md rounded-lg">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-100 dark:bg-gray-800">
               <tr>

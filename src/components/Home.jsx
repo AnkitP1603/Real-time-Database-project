@@ -4,8 +4,6 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Navigate, NavLink, useNavigate } from 'react-router-dom';
 import { adddata, deldata, updatedata } from './context/ContextProvider';
 
-
-
 const Home = () => {
   const [getuserdata, setUserdata] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,45 +65,11 @@ const Home = () => {
     }
   };
 
-  const updateData = (data)=>{
+  const updateData = (data) => {
     setUPdata(data);
     navigate("/update");
-  }
+  };
 
-//   const updateData = async (eventData, token, id = null) => {
-//     try {
-//       const method = id ? "PUT" : "POST"; // Use PUT for editing
-//       const url = id
-//         ? `https://mib-backend-uuga.onrender.com/api/v1/events/${id}`
-//         : `https://mib-backend-uuga.onrender.com/api/v1/events`;
-  
-//       const res = await fetch(url, {
-//         method: method,
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization": `Bearer ${token}`
-//         },
-//         body: JSON.stringify({
-//           title: eventData.title,
-//           description: eventData.description,
-//           date: eventData.date,
-//           time: eventData.time,
-//           location: eventData.location,
-//           category: eventData.category
-//         })
-//       });
-  
-//       const data = await res.json();
-//       if (!res.ok) {
-//         throw new Error(data.message || "Error occurred!");
-//       }
-  
-//       return data; // Return the response data if successful
-//     } catch (error) {
-//       console.error(error);
-//       throw new Error(error.message || "Something went wrong.");
-//     }
-//   };
   const totalPages = Math.ceil(getuserdata.length / itemsPerPage);
   const paginatedData = getuserdata.slice(
     (currentPage - 1) * itemsPerPage,
@@ -117,74 +81,71 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-24">
-      {udata && (
-        <div className="mb-4 rounded-md bg-green-100 border border-green-400 text-green-800 px-4 py-3">
-          <strong className="font-semibold">{udata.title}</strong> added successfully!
-        </div>
-      )}
-      {updata && (
-        <div className="mb-4 rounded-md bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3">
-          <strong className="font-semibold">{updata.title}</strong> updated successfully!
-        </div>
-      )}
-      {dltdata && (
-        <div className="mb-4 rounded-md bg-red-100 border border-red-400 text-red-800 px-4 py-3">
-          <strong className="font-semibold">{dltdata.title}</strong> deleted successfully!
-        </div>
-      )}
+    <div className="pt-24 px-4 min-h-screen bg-gray-300 dark:bg-[#111827] text-gray-900 dark:text-white">
+      <div className="max-w-7xl mx-auto">
+        {udata && (
+          <div className="mb-4 rounded bg-green-100 border border-green-400 text-green-800 px-4 py-3">
+            <strong>{udata.title}</strong> added successfully!
+          </div>
+        )}
+        {updata && (
+          <div className="mb-4 rounded bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3">
+            <strong>{updata.title}</strong> updated successfully!
+          </div>
+        )}
+        {dltdata && (
+          <div className="mb-4 rounded bg-red-100 border border-red-400 text-red-800 px-4 py-3">
+            <strong>{dltdata.title}</strong> deleted successfully!
+          </div>
+        )}
 
-      <div className="flex justify-end mb-6">
-        <NavLink to="/create">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow-sm transition-all duration-200">
-            + Add Event
-          </button>
-        </NavLink>
-      </div>
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-4"></div>
-          <p className="text-gray-600 text-lg font-medium">Fetching Events...</p>
+        <div className="flex justify-end mb-6">
+          <NavLink to="/create">
+            <button className="bg-blue-700 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded shadow">
+              + Add Event
+            </button>
+          </NavLink>
         </div>
-      ) : (
-        <>
-          <div className="hidden md:block overflow-x-auto bg-white shadow-lg rounded-lg">
-            <table className="min-w-full table-auto text-sm text-left text-gray-700">
-              <thead className="bg-gray-100 border-b">
+
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-4"></div>
+            <p className="text-gray-600 text-lg font-medium">Fetching Events...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto bg-white dark:bg-gray-700 shadow-md rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-6 py-3 font-medium">#</th>
-                  <th className="px-6 py-3 font-medium">Title</th>
-                  <th className="px-6 py-3 font-medium">Description</th>
-                  <th className="px-6 py-3 font-medium">Date</th>
-                  <th className="px-6 py-3 font-medium">Time</th>
-                  <th className="px-6 py-3 font-medium">Location</th>
-                  <th className="px-6 py-3 font-medium">Category</th>
-                  <th className="px-6 py-3 font-medium">Organized By</th>
-                  <th className="px-6 py-3 font-medium">Actions</th>
+                  {["#", "Title", "Description", "Date", "Time", "Location", "Category", "Organized By", "Actions"].map((head) => (
+                    <th key={head} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      {head}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {paginatedData.map((element, index) => (
-                  <tr key={element._id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td className="px-6 py-3">{element.title}</td>
-                    <td className="px-6 py-3">{element.description}</td>
-                    <td className="px-6 py-3">{new Date(element.date).toLocaleDateString()}</td>
-                    <td className="px-6 py-3">{element.time}</td>
-                    <td className="px-6 py-3">{element.location}</td>
-                    <td className="px-6 py-3">{element.category}</td>
-                    <td className="px-6 py-3">{element.organiserName}</td>
-                    <td className="px-6 py-3">
+                  <tr key={element._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-4 py-3 font-medium">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="px-4 py-3">{element.title}</td>
+                    <td className="px-4 py-3">{element.description}</td>
+                    <td className="px-4 py-3">{new Date(element.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">{element.time}</td>
+                    <td className="px-4 py-3">{element.location}</td>
+                    <td className="px-4 py-3">{element.category}</td>
+                    <td className="px-4 py-3">{element.organiserName}</td>
+                    <td className="px-4 py-3">
                       <div className="flex gap-2">
-                          <button
-                            onClick={() => updateData(element)}
-                           className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
-                            <CreateIcon fontSize="small" />
-                          </button>
+                        <button
+                          onClick={() => updateData(element)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded"
+                        >
+                          <CreateIcon fontSize="small" />
+                        </button>
                         <button
                           onClick={() => deleteuser(element._id)}
-                          className="bg-red-500 hover:bg-red-600 text-white p-1 rounded shadow-sm"
+                          className="bg-red-500 hover:bg-red-600 text-white p-1 rounded"
                         >
                           <DeleteOutlineIcon fontSize="small" />
                         </button>
@@ -194,54 +155,56 @@ const Home = () => {
                 ))}
               </tbody>
             </table>
-          </div>
 
-          <div className="block md:hidden space-y-4">
-            {paginatedData.map((element) => (
-              <div key={element._id} className="bg-white rounded-lg shadow-md p-4">
-                <h2 className="text-lg font-semibold mb-1">{element.title}</h2>
-                <p className="text-sm text-gray-600 mb-2">{element.description}</p>
-                <div className="text-sm text-gray-700 space-y-1 mb-2">
-                  <p><strong>Date:</strong> {new Date(element.date).toLocaleDateString()}</p>
-                  <p><strong>Time:</strong> {element.time}</p>
-                  <p><strong>Location:</strong> {element.location}</p>
-                  <p><strong>Category:</strong> {element.category}</p>
-                  <p><strong>Organized By:</strong> {element.organiserName}</p>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <NavLink to={`/edit/${element._id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow-sm text-sm">
-                      Edit
-                    </button>
-                  </NavLink>
+            {/* Pagination */}
+            {getuserdata.length > itemsPerPage && (
+              <div className="flex justify-center items-center py-4 space-x-1 text-sm text-white">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                >
+                  «
+                </button>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                >
+                  &lt;
+                </button>
+                {Array.from({ length: totalPages }, (_, idx) => (
                   <button
-                    onClick={() => deleteuser(element._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm text-sm"
+                    key={idx}
+                    onClick={() => handlePageChange(idx + 1)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === idx + 1
+                        ? "bg-blue-700 text-white"
+                        : "bg-gray-200 dark:bg-gray-700"
+                    }`}
                   >
-                    Delete
+                    {idx + 1}
                   </button>
-                </div>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                >
+                  &gt;
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                >
+                  »
+                </button>
               </div>
-            ))}
+            )}
           </div>
-
-          <div className="mt-6 flex justify-center space-x-2">
-            {Array.from({ length: totalPages }, (_, idx) => (
-              <button
-                key={idx}
-                onClick={() => handlePageChange(idx + 1)}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  currentPage === idx + 1
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {idx + 1}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };
