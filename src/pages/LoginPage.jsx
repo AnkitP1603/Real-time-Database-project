@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa6";
 import { FaLock, FaLockOpen } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,8 +31,8 @@ const LoginPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.msg || 'Login failed');
 
-      alert('Login successful!');
-      localStorage.setItem("token", data.token);
+      // alert('Login successful!');
+      login(data.token, data.user);
       navigate('/home');
     } catch (err) {
       alert(err.message || 'Something went wrong. Please try again.');

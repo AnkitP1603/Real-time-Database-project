@@ -42,7 +42,7 @@ export default function Signup() {
 
       if (!res.ok) throw new Error(data.message || 'Signup failed');
 
-      alert('Signup successful!');
+    //   alert('Signup successful!');
       navigate("/login")
     } catch (err) {
       console.error(err);

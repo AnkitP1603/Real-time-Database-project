@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import io from 'socket.io-client';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { NavLink } from 'react-router-dom';
 import { adddata, deldata, updatedata } from './context/ContextProvider';
 
+const socket = io("https://mib-backend-uuga.onrender.com");
+
 const Home = () => {
   const [getuserdata, setUserdata] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const { udata, setUdata } = useContext(adddata);
   const { updata, setUPdata } = useContext(updatedata);
   const { dltdata, setDLTdata } = useContext(deldata);
@@ -21,23 +26,37 @@ const Home = () => {
           "Authorization": `Bearer ${token}`
         }
       });
-  
+
       const data = await res.json();
-  
-  
-      if (res.ok) {
-        // Ensure we're accessing 'events' from the response
-        if (data.events) {
-          setUserdata(data.events); // Set the events array // Debug: Number of events
-        } else {
-        }
-      } else {
+      if (res.ok && data.events) {
+        setUserdata(data.events);
       }
     } catch (error) {
+      console.log("Fetch error:", error);
     }
   };
+
   useEffect(() => {
     getdata();
+
+    // Listen to real-time events
+    socket.on('eventCreated', () => {
+      getdata();
+    });
+
+    socket.on('eventUpdated', () => {
+      getdata();
+    });
+
+    socket.on('eventDeleted', () => {
+      getdata();
+    });
+
+    return () => {
+      socket.off('eventCreated');
+      socket.off('eventUpdated');
+      socket.off('eventDeleted');
+    };
   }, []);
 
   const deleteuser = async (id) => {
@@ -53,7 +72,7 @@ const Home = () => {
       const data = await res.json();
       if (res.ok) {
         setDLTdata(data);
-        getdata();
+        // getdata() not needed here since socket handles it
       } else {
         console.log("Delete failed");
       }
@@ -62,12 +81,19 @@ const Home = () => {
     }
   };
 
+  const totalPages = Math.ceil(getuserdata.length / itemsPerPage);
+  const paginatedData = getuserdata.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-24">
       {/* Alerts */}
-      <br></br>
-      <br></br>
       {udata && (
         <div className="mb-4 rounded-md bg-green-100 border border-green-400 text-green-800 px-4 py-3">
           <strong className="font-semibold">{udata.title}</strong> added successfully!
@@ -105,27 +131,24 @@ const Home = () => {
               <th className="px-6 py-3 font-medium">Time</th>
               <th className="px-6 py-3 font-medium">Location</th>
               <th className="px-6 py-3 font-medium">Category</th>
+              <th className="px-6 py-3 font-medium">Organized By</th>
               <th className="px-6 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(getuserdata) && getuserdata.map((element, index) => (
+            {paginatedData.map((element, index) => (
               <tr key={element._id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-3">{index + 1}</td>
+                <td className="px-6 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                 <td className="px-6 py-3">{element.title}</td>
                 <td className="px-6 py-3">{element.description}</td>
                 <td className="px-6 py-3">{new Date(element.date).toLocaleDateString()}</td>
                 <td className="px-6 py-3">{element.time}</td>
                 <td className="px-6 py-3">{element.location}</td>
                 <td className="px-6 py-3">{element.category}</td>
+                <td className="px-6 py-3">{element.organiserName}</td>
                 <td className="px-6 py-3">
                   <div className="flex gap-2">
-                    <NavLink to={`view/${element._id}`}>
-                      <button className="bg-green-500 hover:bg-green-600 text-white p-1 rounded shadow-sm">
-                        <RemoveRedEyeIcon fontSize="small" />
-                      </button>
-                    </NavLink>
-                    <NavLink to={`edit/${element._id}`}>
+                    <NavLink to={`/edit/${element._id}`}>
                       <button className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded shadow-sm">
                         <CreateIcon fontSize="small" />
                       </button>
@@ -142,6 +165,23 @@ const Home = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center space-x-2">
+        {Array.from({ length: totalPages }, (_, idx) => (
+          <button
+            key={idx}
+            onClick={() => handlePageChange(idx + 1)}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${
+              currentPage === idx + 1
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+            }`}
+          >
+            {idx + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
