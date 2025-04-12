@@ -22,7 +22,7 @@ export default function TableLogsPage() {
       );
 
       const formatted = filteredLogs.map((log) => ({
-        title: log.title || "Deleted Event",
+        title: log.title,
         description: `${log.action} by ${log.performedBy?.name || "Unknown"}`,
         date: new Date(log.timestamp).toISOString().split("T")[0],
         time: new Date(log.timestamp).toLocaleTimeString(),

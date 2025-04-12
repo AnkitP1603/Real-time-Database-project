@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { adddata, deldata, updatedata } from './context/ContextProvider';
 
 const Home = () => {
@@ -134,7 +134,7 @@ const Home = () => {
                     <td className="px-4 py-3">{element.time}</td>
                     <td className="px-4 py-3">{element.location}</td>
                     <td className="px-4 py-3">{element.category}</td>
-                    <td className="px-4 py-3">{element.organiserName}</td>
+                    <td className="px-4 py-3">{element.organizedBy?.name || "N/A"}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button
@@ -159,47 +159,15 @@ const Home = () => {
             {/* Pagination */}
             {getuserdata.length > itemsPerPage && (
               <div className="flex justify-center items-center py-4 space-x-1 text-sm text-white">
-                <button
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
-                >
-                  «
-                </button>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
-                >
-                  &lt;
-                </button>
+                <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50">«</button>
+                <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50">&lt;</button>
                 {Array.from({ length: totalPages }, (_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handlePageChange(idx + 1)}
-                    className={`px-3 py-1 rounded ${
-                      currentPage === idx + 1
-                        ? "bg-blue-700 text-white"
-                        : "bg-gray-200 dark:bg-gray-700"
-                    }`}
-                  >
+                  <button key={idx} onClick={() => handlePageChange(idx + 1)} className={`px-3 py-1 rounded ${currentPage === idx + 1 ? "bg-blue-700 text-white" : "bg-gray-200 dark:bg-gray-700"}`}>
                     {idx + 1}
                   </button>
                 ))}
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
-                >
-                  &gt;
-                </button>
-                <button
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
-                >
-                  »
-                </button>
+                <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50">&gt;</button>
+                <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50">»</button>
               </div>
             )}
           </div>
